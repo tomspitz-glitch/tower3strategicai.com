@@ -7,16 +7,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --obsidian: #1A1A1E; /* Primary Color */
-            --blueprint-blue: #005683; /* Secondary Color */
-            --hi-fi-grey: #E0E0E0; /* Accent 2 */
+            --obsidian: #1A1A1E;
+            --blueprint-blue: #005683;
+            --hi-fi-grey: #E0E0E0;
             --white: #FFFFFF;
         }
 
         body {
             background-color: var(--hi-fi-grey);
             color: var(--obsidian);
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Fallback for Inyer-style clean sans-serif */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             display: flex;
             justify-content: center;
@@ -24,7 +24,6 @@
             min-height: 100vh;
             padding-top: 50px;
             line-height: 1.6;
-            /* Subtle Blueprint Blue grid motif */
             background-image: 
                 linear-gradient(rgba(0, 86, 131, 0.04) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 86, 131, 0.04) 1px, transparent 1px);
@@ -47,7 +46,6 @@
         }
 
         .logo {
-            /* Reduced by 25% from original draft to function as a 'Sovereign Stamp' */
             max-width: 185px; 
             margin-bottom: 30px;
         }
@@ -66,7 +64,7 @@
         }
 
         .bio-text {
-            font-family: 'Roboto Mono', monospace; /* Used for technical structural emphasis */
+            font-family: 'Roboto Mono', monospace;
             font-size: 0.95rem;
             white-space: pre-line;
             color: var(--obsidian);
@@ -97,7 +95,6 @@
             border-bottom-color: var(--blueprint-blue);
         }
 
-        /* Technical watermark */
         .ver-tag {
             position: absolute;
             top: 20px;
@@ -148,4 +145,25 @@
     <div class="contact-footer">
         <strong>Tom Spitz</strong><br>
         Founder & Strategic AI Architect<br>
-        <a href="/cdn-cgi/l/email-protection#b3c7dcdec0c3dac7c9f3c7dcc4d6c180c0c7c1d2c7d6d4dad0d2da9dd0dcde"><span class="__cf_ema
+        <span id="contact-email"></span>
+    </div>
+</div>
+
+<script>
+// Email rendered via JS to bypass Cloudflare/GitHub Pages email obfuscation.
+// The address is split across variables so no proxy filter sees a complete
+// email string in the static HTML source.
+(function() {
+    var u = 'tomspitz';
+    var d = 'tower3strategicai.com';
+    var addr = u + '@' + d;
+    var el = document.getElementById('contact-email');
+    var a = document.createElement('a');
+    a.href = 'mail' + 'to:' + addr;
+    a.textContent = addr;
+    el.appendChild(a);
+})();
+</script>
+
+</body>
+</html>
