@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rework Tax Calculator | Tower 3 Strategic AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --obsidian: #1A1A1E;
+            --blueprint-blue: #005683;
+            --blueprint-light: #0078b5;
+            --hi-fi-grey: #E0E0E0;
+            --warm-grey: #F5F5F3;
+            --white: #FFFFFF;
+            --alert-amber: #C67A00;
+            --alert-red: #A83232;
+            --signal-green: #2D7A3A;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--hi-fi-grey);
+            color: var(--obsidian);
+            font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            line-height: 1.6;
+            background-image:
+                linear-gradient(rgba(0, 86, 131, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 86, 131, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .calculator-container {
+            max-width: 780px;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 16px 16px 0px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .calc-header {
+            background-color: var(--obsidian);
+            padding: 36px 48px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calc-header::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 6px;
+            background: linear-gradient(180deg, var(--blueprint-blue), var(--blueprint-light));
+        }
+
+        .calc-header h1 {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            font-size: 1.6rem;
+            color: var(--white);
+            letter-spacing: 0.5px;
+        }
+
+        .calc-header h1 span {
+            color: var(--blueprint-light);
+            font-weight: 700;
+        }
+
+        .calc-header p {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.45);
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .calc-body {
+            padding: 40px 48px;
+        }
+
+        .input-section {
+            margin-bottom: 36px;
+        }
+
+        .input-section h2 {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--blueprint-blue);
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--hi-fi-grey);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .input-group label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--obsidian);
+            margin-bottom: 6px;
+        }
+
+        .input-group .hint {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.68rem;
+            color: #888;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .input-group input {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            padding: 12px 16px;
+            border: 1.5px solid var(--hi-fi-grey);
+            background: var(--warm-grey);
+            color: var(--obsidian);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--blueprint-blue);
+            box-shadow: 0 0 0 3px rgba(0, 86, 131, 0.1);
+            background: var(--white);
+        }
+
+        .input-group input::placeholder {
+            color: #bbb;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--hi-fi-grey);
+            margin: 8px 0 36px;
+        }
+
+        .results-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-headline {
+            background: var(--obsidian);
+            padding: 32px 36px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-headline::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 5px;
+        }
+
+        .result-headline.severity-typical::before { background: var(--signal-green); }
+        .result-headline.severity-elevated::before { background: var(--alert-amber); }
+        .result-headline.severity-critical::before { background: var(--alert-red); }
+
+        .result-headline .big-number {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1;
+        }
+
+        .result-headline .big-label {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 8px;
+        }
+
+        .result-headline .severity-badge {
+            display: inline-block;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 4px 12px;
+            margin-top: 16px;
+        }
+
+        .severity-badge.typical { background: var(--signal-green); color: var(--white); }
+        .severity-badge.elevated { background: var(--alert-amber); color: var(--white); }
+        .severity-badge.critical { background: var(--alert-red); color: var(--white); }
+
+        .result-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .result-card {
+            background: var(--warm-grey);
+            padding: 24px;
+            border-left: 3px solid var(--blueprint-blue);
+        }
+
+        .result-card .card-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--obsidian);
+        }
+
+        .result-card .card-label {
+            font-size: 0.78rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .result-narrative {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: #555;
+            padding: 24px;
+            background: var(--warm-grey);
+            border-left: 3px solid var(--hi-fi-grey);
+        }
+
+        .calc-button {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            padding: 16px 40px;
+            background: var(--blueprint-blue);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .calc-button:hover {
+            background: var(--blueprint-light);
+        }
+
+        .calc-button:active {
+            transform: scale(0.99);
+        }
+
+        .calc-footer {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.65rem;
+            color: #999;
+            padding: 20px 48px;
+            border-top: 1px solid var(--hi-fi-grey);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .calc-footer a {
+            color: var(--blueprint-blue);
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .calc-header, .calc-body, .calc-footer { padding-left: 24px; padding-right: 24px; }
+            .input-grid, .result-cards { grid-template-columns: 1fr; }
+            .result-headline .big-number { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-container">
+    <div class="calc-header">
+        <h1>The <span>Rework Tax</span> Calculator</h1>
+        <p>Tower 3 Strategic AI // Operational Cost Assessment</p>
+    </div>
+
+    <div class="calc-body">
+        <div class="input-section">
+            <h2>Your Firm</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Annual Revenue</label>
+                    <div class="hint">Approximate is fine</div>
+                    <input type="text" id="revenue" placeholder="$2,000,000" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label>Your Annual Compensation</label>
+                    <div class="hint">Total comp — salary, draws, distributions</div>
+                    <input type="text" id="founderComp" placeholder="$250,000" inputmode="numeric">
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h2>The Founder Tax</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Hours You Work Per Week</label>
+                    <div class="hint">Your total hours, not just billable</div>
+                    <input type="text" id="founderHours" placeholder="48" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label>Hours Per Week on Manual Ops</label>
+                    <div class="hint">Reporting, reconciliation, scheduling, data entry, fixing errors, chasing information</div>
+                    <input type="text" id="founderOpsHours" placeholder="8" inputmode="numeric">
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h2>Your Team</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Staff Doing Repetitive Tasks</label>
+                    <div class="hint">People whose week includes manual ops work</div>
+                    <input type="text" id="staffCount" placeholder="2" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label>Avg Staff Hours/Week on Manual Ops</label>
+                    <div class="hint">Per person, estimate is fine</div>
+                    <input type="text" id="staffOpsHours" placeholder="10" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label>Average Staff Hourly Cost</label>
+                    <div class="hint">Loaded rate (salary + benefits + overhead) ÷ 2,080</div>
+                    <input type="text" id="staffRate" placeholder="$45" inputmode="numeric">
+                </div>
+            </div>
+        </div>
+
+        <button class="calc-button" onclick="calculate()">Calculate Your Rework Tax</button>
+
+        <div class="divider" style="margin-top:36px"></div>
+
+        <div class="results-section" id="results">
+            <div class="result-headline" id="resultHeadline">
+                <div class="big-number" id="reworkPercent">—</div>
+                <div class="big-label">of revenue consumed by rework</div>
+                <div class="severity-badge" id="severityBadge">—</div>
+            </div>
+
+            <div class="result-cards">
+                <div class="result-card">
+                    <div class="card-value" id="annualCost">—</div>
+                    <div class="card-label">Annual rework cost</div>
+                </div>
+                <div class="result-card">
+                    <div class="card-value" id="founderCost">—</div>
+                    <div class="card-label">Your time spent on ops / year</div>
+                </div>
+                <div class="result-card">
+                    <div class="card-value" id="founderHoursRecaptured">—</div>
+                    <div class="card-label">Founder hours recaptured / year</div>
+                </div>
+                <div class="result-card">
+                    <div class="card-value" id="staffCost">—</div>
+                    <div class="card-label">Staff rework cost / year</div>
+                </div>
+            </div>
+
+            <div class="result-narrative" id="narrative">—</div>
+        </div>
+    </div>
+
+    <div class="calc-footer">
+        <span>Tower 3 Strategic AI</span>
+        <a href="/cdn-cgi/l/email-protection#4d3922203e3d2439370d39223a283f7e3e393f2c39282a242e2c24632e2220"><span class="__cf_email__" data-cfemail="2c5843415f5c4558566c58435b495e1f5f585e4d58494b454f4d45024f4341">[email&#160;protected]</span></a>
+    </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function parseNum(id) {
+    const raw = document.getElementById(id).value.replace(/[$,\s]/g, '');
+    const n = parseFloat(raw);
+    return isNaN(n) ? 0 : n;
+}
+
+function fmt(n) {
+    return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+function calculate() {
+    const revenue = parseNum('revenue');
+    const founderComp = parseNum('founderComp');
+    const founderTotalHours = parseNum('founderHours');
+    const founderOpsHours = parseNum('founderOpsHours');
+    const staffCount = parseNum('staffCount');
+    const staffOpsHours = parseNum('staffOpsHours');
+    const staffRate = parseNum('staffRate');
+
+    if (revenue <= 0 || founderComp <= 0 || founderTotalHours <= 0 || founderOpsHours <= 0) {
+        alert('Please fill in at least your revenue, compensation, total hours, and manual ops hours.');
+        return;
+    }
+
+    const weeksPerYear = 50;
+
+    // Founder loaded hourly rate from actual compensation
+    // Add 25% burden (benefits, overhead, self-employment tax) for a realistic loaded rate
+    const founderLoadedComp = founderComp * 1.25;
+    const founderAnnualHours = founderTotalHours * weeksPerYear;
+    const founderHourlyRate = founderLoadedComp / founderAnnualHours;
+
+    // Founder rework cost — real dollars based on what you actually pay yourself
+    const founderOpsAnnualHours = founderOpsHours * weeksPerYear;
+    const founderReworkCost = founderOpsAnnualHours * founderHourlyRate;
+
+    // Staff rework cost
+    const staffReworkCost = staffCount * staffOpsHours * weeksPerYear * staffRate;
+
+    // Totals
+    const totalReworkCost = founderReworkCost + staffReworkCost;
+    const reworkPercent = (totalReworkCost / revenue) * 100;
+
+    // What % of the founder's working week is ops
+    const founderOpsPercent = (founderOpsHours / founderTotalHours) * 100;
+
+    // Classification
+    let severity, severityClass, severityLabel, narrative;
+    if (reworkPercent < 10) {
+        severity = 'typical';
+        severityClass = 'typical';
+        severityLabel = 'Within Range';
+        narrative = `Your operational overhead is within the typical range for a firm your size. ` +
+            `That said, ${fmt(totalReworkCost)} per year and ${Math.round(founderOpsAnnualHours)} hours of your time ` +
+            `is still a real cost. You're spending ${founderOpsPercent.toFixed(0)}% of your working week on tasks ` +
+            `that don't serve clients or grow the business. Even modest automation of your highest-frequency ` +
+            `tasks could free meaningful capacity for growth work.`;
+    } else if (reworkPercent < 25) {
+        severity = 'elevated';
+        severityClass = 'elevated';
+        severityLabel = 'Elevated';
+        narrative = `Your firm is paying a significant rework tax. At ${fmt(totalReworkCost)} annually — ` +
+            `${reworkPercent.toFixed(1)}% of revenue — operational friction is consuming resources that could ` +
+            `be deployed toward growth or client work. You're personally spending ` +
+            `${Math.round(founderOpsAnnualHours)} hours per year (${founderOpsPercent.toFixed(0)}% of your week) on manual ops. ` +
+            `That's ${Math.round(founderOpsAnnualHours / 8)} working days per year — roughly ` +
+            `${Math.round(founderOpsAnnualHours / 40)} weeks — on tasks that shouldn't require the founder's attention.`;
+    } else {
+        severity = 'critical';
+        severityClass = 'critical';
+        severityLabel = 'Critical';
+        narrative = `This is a structural constraint on your firm's growth. At ${reworkPercent.toFixed(0)}% of revenue, ` +
+            `operational waste is actively suppressing your capacity to serve clients and build the business. ` +
+            `You're losing ${Math.round(founderOpsAnnualHours / 8)} full working days per year — ` +
+            `${Math.round(founderOpsAnnualHours / 40)} working weeks — to manual operations. ` +
+            `At your compensation rate, that's ${fmt(founderReworkCost)} of founder time alone, plus ` +
+            `${fmt(staffReworkCost)} in staff rework costs. These are real dollars leaving the firm ` +
+            `for work that should not exist.`;
+    }
+
+    // Render
+    document.getElementById('reworkPercent').textContent = reworkPercent.toFixed(1) + '%';
+    document.getElementById('annualCost').textContent = fmt(totalReworkCost);
+    document.getElementById('founderCost').textContent = fmt(founderReworkCost);
+    document.getElementById('founderHoursRecaptured').textContent = Math.round(founderOpsAnnualHours).toLocaleString();
+    document.getElementById('staffCost').textContent = fmt(staffReworkCost);
+    document.getElementById('narrative').textContent = narrative;
+
+    const badge = document.getElementById('severityBadge');
+    badge.textContent = severityLabel;
+    badge.className = 'severity-badge ' + severityClass;
+
+    const headline = document.getElementById('resultHeadline');
+    headline.className = 'result-headline severity-' + severity;
+
+    const results = docume
