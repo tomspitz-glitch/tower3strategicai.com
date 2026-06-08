@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Inference Field Guide v1.2 | Tower 3 Strategic AI</title>
+    <meta name="description" content="What we observed running twelve open-source language models across twenty professional services workload categories on a single workstation. An operational report from Tower 3 Strategic AI.">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --obsidian: #1A1A1E;
+            --blueprint-blue: #005683;
+            --blueprint-light: #0078b5;
+            --hi-fi-grey: #E0E0E0;
+            --warm-grey: #F5F5F3;
+            --white: #FFFFFF;
+            --alert-amber: #C67A00;
+            --alert-red: #A83232;
+            --signal-green: #2D7A3A;
+            --ink-soft: #444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--hi-fi-grey);
+            color: var(--obsidian);
+            font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            line-height: 1.7;
+            background-image:
+                linear-gradient(rgba(0, 86, 131, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 86, 131, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .guide-container {
+            max-width: 860px;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 16px 16px 0px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* ---------- Header ---------- */
+        .guide-header {
+            background-color: var(--obsidian);
+            padding: 44px 56px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .guide-header::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 6px;
+            background: linear-gradient(180deg, var(--blueprint-blue), var(--blueprint-light));
+        }
+
+        .guide-header .logo {
+            max-width: 150px;
+            margin-bottom: 28px;
+        }
+
+        .guide-header h1 {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            font-size: 1.85rem;
+            color: var(--white);
+            letter-spacing: 0.3px;
+            line-height: 1.25;
+            max-width: 36ch;
+        }
+
+        .guide-header .eyebrow {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--blueprint-light);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+        }
+
+        .meta-line {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 18px;
+            line-height: 1.9;
+        }
+
+        .meta-line strong { color: rgba(255,255,255,0.8); font-weight: 700; }
+
+        .download-btn {
+            display: inline-block;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            padding: 13px 28px;
+            margin-top: 26px;
+            background: var(--blueprint-blue);
+            color: var(--white);
+            text-decoration: none;
+            border: none;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .download-btn:hover { background: var(--blueprint-light); }
+        .download-btn:active { transform: scale(0.99); }
+        .download-btn::before { content: '\2193  '; }
+
+        /* ---------- Body ---------- */
+        .guide-body {
+            padding: 48px 56px 40px;
+        }
+
+        .guide-body p,
+        .guide-body ul,
+        .guide-body .question,
+        .guide-body .descriptor {
+            max-width: 70ch;
+        }
+
+        .guide-body p {
+            font-size: 1.0rem;
+            color: var(--ink-soft);
+            margin-bottom: 1.15rem;
+        }
+
+        .guide-body p strong { color: var(--obsidian); font-weight: 700; }
+
+        h2 {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.45rem;
+            color: var(--obsidian);
+            letter-spacing: 0.2px;
+            margin: 52px 0 22px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--hi-fi-grey);
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 12px;
+            background: var(--blueprint-blue);
+            vertical-align: baseline;
+        }
+
+        h3 {
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+            font-size: 1.02rem;
+            color: var(--blueprint-blue);
+            letter-spacing: 0.5px;
+            margin: 38px 0 14px;
+        }
+
+        .question, .descriptor {
+            font-style: italic;
+            color: #666;
+            font-size: 0.98rem;
+            margin-bottom: 1.1rem;
+            padding-left: 16px;
+            border-left: 3px solid var(--hi-fi-grey);
+        }
+
+        ul { margin: 0 0 1.15rem 0; padding-left: 0; list-style: none; }
+        li {
+            font-size: 1.0rem;
+            color: var(--ink-soft);
+            margin-bottom: 0.5rem;
+            padding-left: 22px;
+            position: relative;
+        }
+        li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0.62em;
+            width: 7px; height: 7px;
+            background: var(--blueprint-blue);
+        }
+        li strong { color: var(--obsidian); font-weight: 700; }
+
+        /* ---------- Field Guide finding callout ---------- */
+        .finding {
+            background: var(--warm-grey);
+            border-left: 4px solid var(--blueprint-blue);
+            padding: 20px 24px;
+            margin: 22px 0 28px;
+            max-width: none;
+        }
+        .finding p { margin: 0; max-width: none; color: var(--obsidian); }
+        .finding .finding-label {
+            display: block;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--blueprint-blue);
+            margin-bottom: 8px;
+        }
+
+        .note {
+            font-size: 0.95rem;
+            color: #666;
+        }
+        .note strong { color: var(--obsidian); }
+
+        /* ---------- Tables ---------- */
+        .table-scroll {
+            overflow-x: auto;
+            margin: 8px 0 28px;
+            border: 1px solid var(--hi-fi-grey);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.86rem;
+            min-width: 560px;
+        }
+        table.wide { min-width: 720px; }
+
+        thead th {
+            background: var(--obsidian);
+            color: var(--white);
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: left;
+            padding: 12px 14px;
+            vertical-align: bottom;
+        }
+
+        tbody td {
+            padding: 11px 14px;
+            border-top: 1px solid var(--hi-fi-grey);
+            color: var(--ink-soft);
+            vertical-align: top;
+        }
+
+        tbody tr:nth-child(even) { background: var(--warm-grey); }
+        tbody td:first-child {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--obsidian);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        tbody td strong { color: var(--obsidian); font-weight: 700; }
+
+        .scroll-hint {
+            display: none;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.66rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: -20px 0 24px;
+        }
+
+        hr.section-rule {
+            border: none;
+            border-top: 1px solid var(--hi-fi-grey);
+            margin: 44px 0;
+        }
+
+        /* ---------- Footer ---------- */
+        .guide-footer {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.78rem;
+            color: #777;
+            padding: 28px 56px 36px;
+            border-top: 1px solid var(--hi-fi-grey);
+            line-height: 1.9;
+        }
+        .guide-footer a { color: var(--blueprint-blue); text-decoration: none; }
+        .guide-footer a:hover { text-decoration: underline; }
+        .guide-footer .firm { color: var(--obsidian); font-weight: 700; }
+
+        .ver-tag {
+            position: absolute;
+            bottom: 16px;
+            right: 22px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--white);
+            opacity: 0.35;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ---------- Mobile ---------- */
+        @media (max-width: 640px) {
+            body { padding: 0; }
+            .guide-container { box-shadow: none; }
+            .guide-header { padding: 32px 24px 28px; }
+            .guide-header h1 { font-size: 1.4rem; }
+            .guide-body { padding: 32px 24px; font-size: 0.96rem; }
+            .guide-footer { padding: 24px; }
+            h2 { font-size: 1.25rem; margin-top: 40px; }
+            .scroll-hint { display: block; }
+            .guide-body p, .guide-body ul, .guide-body li { font-size: 0.96rem; }
+        }
+
+        /* ---------- Print / PDF ---------- */
+        @media print {
+            @page { margin: 16mm 14mm; }
+            body {
+                background: var(--white);
+                background-image: none;
+                padding: 0;
+                display: block;
+                color: #000;
+                font-size: 10.5pt;
+                line-height: 1.5;
+            }
+            .guide-container {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+            }
+            .guide-header {
+                background: var(--obsidian) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                padding: 28px 32px;
+            }
+            .download-btn, .scroll-hint { display: none !important; }
+            .guide-body { padding: 24px 0 0; }
+            .guide-body p, .guide-body ul, .guide-body .question, .guide-body .descriptor { max-width: none; }
+            .table-scroll { overflow: visible; border: 1px solid #bbb; }
+            table, table.wide { min-width: 0; width: 100%; font-size: 8pt; }
+            thead th {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-size: 7pt;
+            }
+            tbody tr:nth-child(even),
+            .finding {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            h2, h3 { page-break-after: avoid; }
+            h2 { page-break-before: auto; }
+            .finding, h3, .question { page-break-inside: avoid; }
+            tr { page-break-inside: avoid; }
+            .guide-footer { padding: 18px 0 0; }
+            .ver-tag { color: var(--obsidian); position: static; opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="guide-container">
+
+    <div class="guide-header">
+        <img src="tower3-logo.png" alt="Tower 3 Strategic AI" class="logo">
+        <div class="eyebrow">Field Guide // v1.2</div>
+        <h1>Local Inference Field Guide for Professional Services Founders</h1>
+        <div class="meta-line">
+            <strong>Date:</strong> June 2026 &nbsp;&middot;&nbsp; <strong>Author:</strong> Tower 3 Strategic AI<br>
+            <strong>Hardware:</strong> Colossus — RTX 5090 32GB / Ryzen 9 9950X3D / 64GB DDR5<br>
+            <strong>Methodology:</strong> 20-category workload evaluation, 12 models, single workstation
+        </div>
+        <a class="download-btn" href="T3-LocalInferenceFieldGuide_v1_2.pdf" download>Download PDF</a>
+        <div class="ver-tag">T3-FG-001 // v1.2</div>
+    </div>
+
+    <div class="guide-body">
+
+        <h2>What This Is</h2>
+        <p>This guide documents what we observed when we ran twelve open-source language models across twenty professional services workload categories on a single workstation. It is an operational report, not a benchmark. We are not claiming comprehensive coverage, laboratory conditions, or results that generalize to every hardware configuration. We are saying: <em>here is what we ran, here is what we saw, draw your own conclusions.</em></p>
+        <p>The motivation is practical. Tower 3 runs sovereign inference (locally-hosted language models) as the backbone of our internal operations. After roughly six months of evaluation and production use, we wanted to know two things that most published benchmarks don't answer: <em>which workloads actually matter for professional services founders</em>, and <em>how low can you go before the models stop being useful for real work?</em></p>
+        <p>This guide answers both.</p>
+
+        <h2>What It Is Not</h2>
+        <p>This is not a claim that local inference is right for every use case or every budget. It is not a recommendation to abandon cloud AI. It is not a comprehensive academic benchmark. Three categories in this guide require human review to score properly (document drafting quality, email register, and meeting prep completeness) because those judgments require a human. We note that explicitly rather than substituting a metric.</p>
+
+        <h2>The Hardware</h2>
+        <p><strong>Colossus</strong> is a desktop workstation, not a server:</p>
+        <ul>
+            <li>GPU: NVIDIA RTX 5090, 32GB VRAM</li>
+            <li>CPU: AMD Ryzen 9 9950X3D, 16-core</li>
+            <li>RAM: 64GB DDR5-6000</li>
+            <li>Storage: 4TB Gen4 NVMe</li>
+        </ul>
+        <p>This is current-generation consumer hardware. The RTX 5090 runs all Tier 1 and Tier 2 models in a single VRAM load. Tier 3 models (70b+) fit with quantization and run unattended overnight. The Ryzen 9 runs inference without the GPU. We document that separately as the CPU-only tier.</p>
+        <p>The cost of this configuration as of mid-2026 is approximately $5,000–$7,000 fully built. We document the economics in the final section.</p>
+
+        <h2>How to Read This Guide</h2>
+        <p><strong>Twelve models</strong> are evaluated across three tiers:</p>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Tier</th><th>Models</th><th>VRAM range</th></tr></thead>
+                <tbody>
+                    <tr><td>Tier 1 — Small (1b–7b)</td><td>smollm2:1.7b, qwen2.5:3b, gemma3:4b, phi4-mini, qwen2.5:7b</td><td>1–6 GB</td></tr>
+                    <tr><td>Tier 2 — Operational (14b–27b)</td><td>phi4:14b, qwen2.5-coder:14b, gemma3:27b, codestral:22b</td><td>10–22 GB</td></tr>
+                    <tr><td>Tier 3 — Async (32b–72b)</td><td>deepseek-r1:32b, qwen2.5:72b, llama3.3:70b</td><td>24–50 GB</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="scroll-hint">&#8596; scroll table</p>
+
+        <p><strong>Twenty workload categories</strong> are organized in two groups:</p>
+        <p><em>Standard workloads:</em> Agentic dispatch, multi-turn fidelity, long-context retrieval, extraction from prose, graceful degradation on unknowns, and consistency under repetition. These categories reflect the task types Tower 3 runs in daily operations.</p>
+        <p><em>Professional services workloads:</em> Document drafting, client-facing Q&amp;A, summarization at varied compression, warm email drafting, financial and operational data analysis, meeting prep briefings, and contract/agreement review. These categories were developed to cover the full workload surface of a founder-led professional services firm.</p>
+        <p><strong>Scores</strong> are reported on a 0.0–1.0 scale. Dispatch, extraction, and consistency categories use deterministic parsers (pass/fail against a schema). Multi-turn, long-context, graceful degradation, and all professional services categories use a Sonnet-4 LLM judge scoring against documented ground truth. Consistency additionally computes cosine similarity across 5 repetition runs. Document drafting is human-reviewed: qualitative findings are reported in narrative form.</p>
+        <p>A <strong>pass</strong> in this guide means a score of 0.7 or above.</p>
+
+        <h2>The Standard Workloads — What We Found</h2>
+
+        <h3>Agentic Dispatch</h3>
+        <p class="question">The question: does the model emit the right sentinel token and schema-valid JSON when the user approves an action, and stay silent when they don't?</p>
+        <p>This is the highest-stakes binary test in the dataset. A false positive (dispatching when no approval was given) is a failure mode with real operational consequences.</p>
+        <p><strong>Results:</strong> Every model above 3b passes the positive cases cleanly. The meaningful differentiation is on negative cases where models must recognize that no approval was given. smollm2:1.7b scores 0.88. It makes occasional false positives. Everything at 3b and above scores 0.92 or higher on the negative dispatch cases.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Agentic dispatch is viable at qwen2.5:3b and above. If you are building a workflow where an AI creates tasks or calendar events on your behalf, 3b is a viable starting point on GPU. The critical test is the negative case: verify your model handles "thinking out loud" and information-exchange messages without firing.</p></div>
+
+        <h3>Multi-Turn Conversational Fidelity</h3>
+        <p class="question">The question: does the model retain specific constraints established in early turns across a 10–15 exchange conversation?</p>
+        <p>This is the hardest standard category. A model that cannot hold a $45,000 budget ceiling or a "no offshore resources" constraint across a 12-turn proposal discussion is not useful for iterative client work.</p>
+        <p><strong>Results:</strong> Multi-turn fidelity is where the tiers separate most sharply. smollm2:1.7b scores 0.34 with four zero-score prompts. It forgets constraints. deepseek-r1:32b scores 0.99. It is exceptional here, which is consistent with its reasoning architecture. The operational tier (phi4:14b, gemma3:27b) scores 0.70–0.87. qwen2.5:7b scores 0.73, crossing the pass threshold.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Multi-turn fidelity requires at minimum a 7b model on GPU. For work where early-turn constraints are legally or commercially significant (a budget ceiling, a staffing restriction, a client's stated requirement), use 14b or above. deepseek-r1:32b is the quality ceiling here, but at 6–7 seconds per response turn it is marginal for interactive use.</p></div>
+
+        <h3>Long-Context Document Retrieval</h3>
+        <p class="question">The question: given a 3,500-word business assessment, does the model extract accurate specific facts?</p>
+        <p><strong>Results:</strong> Long-context retrieval is broadly well-handled. Every model at 3b and above scores above 0.84, and most score 0.94–1.00. smollm2:1.7b scores 0.84. Even the floor model can pull named people and dollar figures out of a long document most of the time.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Long-context retrieval is achievable at every tier. If your use case is "I uploaded a vendor proposal, find the five things that matter," almost any model in this set handles it. The failure mode at small sizes is occasional precision errors on secondary figures, not complete inability to find information.</p></div>
+
+        <h3>Extraction from Unstructured Prose</h3>
+        <p class="question">The question: given meeting notes, email threads, or status updates, does the model produce structured output with correct field values?</p>
+        <p><strong>Results:</strong> Perfect or near-perfect scores across every model. Every model in the set scores 1.00 on this category. Extraction is the most democratized capability in the dataset. Even smollm2:1.7b scores 1.00 on structured field extraction.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>If your primary use case is extracting action items, decisions, or structured data from narrative text, model selection is a latency question, not a quality question. Even a 1.7b model running on CPU will get this right.</p></div>
+
+        <h3>Graceful Degradation on Unknowns</h3>
+        <p class="question">The question: when asked about private company financials, future events, or non-existent regulations, does the model acknowledge uncertainty rather than fabricate?</p>
+        <p><strong>Results:</strong> Most models pass, but with notable exceptions. gemma3:4b and gemma3:27b each have multiple zero-score prompts (3/10 and 2/10 respectively). These models occasionally confabulate with confidence rather than acknowledging uncertainty. qwen2.5-coder:14b and qwen2.5:72b both score 1.00, with perfect uncertainty acknowledgment. deepseek-r1:32b scores 0.83 with one failure.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>If you are using a local model in a client-facing context where hallucination on unknowable facts is a real risk, test this category specifically against your deployment model. The failure mode is the model stating a false fact with high confidence, which is more dangerous than getting something slightly wrong. gemma3 models at both 4b and 27b show this pattern. Verify before deploying.</p></div>
+
+        <h3>Consistency Under Repetition</h3>
+        <p class="question">The question: does the model produce semantically consistent outputs when the same prompt is run five times?</p>
+        <p><strong>Results:</strong> Consistency is broadly excellent. All models above 3b score above 0.87 on all three consistency subtypes. Even smollm2:1.7b achieves 0.93 on structured JSON consistency. The lowest score in the entire consistency dataset is smollm2:1.7b on prose synthesis at 0.83.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Consistency is not where open-source local models fail in 2026. If you run a pipeline that calls a model on a schedule, the output on Tuesday will be semantically similar to the output on Thursday. The variance is low enough not to be operationally significant at the 7b+ tier.</p></div>
+
+        <h2>The Professional Services Workloads — What We Found</h2>
+
+        <h3>Document Drafting</h3>
+        <p class="descriptor">Proposals, SOWs, engagement letters, project charters, change orders.</p>
+        <p class="note"><strong>Scoring note:</strong> This category is evaluated through human review. We read 8-prompt output sets for phi4:14b (the best operational tier model) and smollm2:1.7b (the floor model) and scored qualitatively.</p>
+        <p><strong>phi4:14b:</strong> Professional-grade output across all document types. Register held throughout long proposals and SOWs. Fee structures, party names, and milestone triggers correctly incorporated. Ready-to-review output. Not necessarily ready-to-send, but requires editing, not rewriting.</p>
+        <p><strong>smollm2:1.7b:</strong> Functional but degraded. Gets most content right but made a factual error identifying a party role (confused the client's managing partner with the consultant organization). Formatting informal: prose paragraphs rather than structured sections. Usable as a drafting scaffold, not as a near-final document.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Document drafting requires 14b or above for production-quality output. At 14b you get something reviewable. At 1.7b you get something you need to fact-check carefully, including party names. For a founder whose documents go to clients, the review burden below 14b is high enough to question the value.</p></div>
+
+        <h3>Client-Facing Q&amp;A</h3>
+        <p class="descriptor">Answer questions about your firm's services, methodology, and pricing from provided context. Include negative cases where the question cannot be answered from context.</p>
+        <p><strong>Results:</strong> phi4:14b leads at 0.825 / 88% pass rate. qwen2.5-coder:14b and deepseek-r1:32b both reach 0.762–0.787 / 75%. The critical differentiation is on the negative cases: questions the AI should refuse to answer because the information isn't in its context. smollm2:1.7b scores 0.263 here, partly because it occasionally fabricates specific client references or pricing details rather than acknowledging they're not in the briefing.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>A local model handling prospect Q&amp;A from a firm profile document needs to be reliable on both answerable and unanswerable questions. The failure mode that matters is fabricating a reference client name or an hourly rate that wasn't in the source material. phi4:14b handles this cleanly. Below 7b, verify the negative case behavior specifically.</p></div>
+
+        <h3>Summarization at Varied Compression</h3>
+        <p class="descriptor">The same source document summarized to three-sentence, one-paragraph, and one-page targets.</p>
+        <p><strong>Results:</strong> Summarization is the second most democratized workload after extraction. Nine of twelve models score above 0.80, including gemma3:4b (0.889) and qwen2.5:3b (0.800). The key test is whether the same critical facts surface at all three compression levels. Most models pass this consistently. The outlier is phi4-mini at 0.544. It struggles to identify what matters at the three-sentence level. qwen2.5:72b and llama3.3:70b have the highest latency in this category (35–136s per prompt) with comparable quality to 14b models.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>If your primary use case is summarizing reports, proposals, or meeting notes at different lengths, the 4b-7b tier handles it well on GPU. This is where gemma3:4b earns its place. For a founder who needs to summarize a 40-page assessment before a board call, gemma3:4b produces accurate summaries at 0.5–2s per prompt.</p></div>
+
+        <h3>Warm Email Drafting</h3>
+        <p class="descriptor">Operational client email: delayed deliverable notification, project updates, invoice follow-up, check-ins. Register is relational, not promotional.</p>
+        <p><strong>Results:</strong> gemma3:27b achieves the only perfect score (1.000) in the entire Field Guide dataset on this category. phi4:14b and deepseek-r1:32b follow at 0.850 / 88%. The notable failures: qwen2.5-coder:14b scores 0.588 and codestral:22b scores 0.637. Both code-specialist models fail significantly on warm register. This is consistent with what we found in a separate outreach A/B evaluation: code-specialist models do not belong in outreach or client communication workflows.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Email register is where model specialization matters most in the professional services context. gemma3:27b has an exceptional feel for the relational tone that distinguishes a good client email from a corporate-sounding one. qwen2.5-coder:14b is the wrong model for this workload: its training on code produces a functional but inappropriately formal register.</p></div>
+
+        <h3>Financial and Operational Data Summary</h3>
+        <p class="descriptor">Invoice aging analysis, pipeline status, fee schedule comparison, utilization tracking, P&amp;L, expense variance.</p>
+        <p><strong>Results:</strong> This is the most discriminating category in the dataset. Scores range from 0.000 to 0.975, a spread wider than any other category. The pattern is binary: models either reason numerically at a useful level or they do not.</p>
+        <p>Models that pass (≥0.7): llama3.3:70b (0.975), gemma3:27b (0.887), qwen2.5:72b (0.800), deepseek-r1:32b (0.838), phi4:14b (0.675, borderline).</p>
+        <p>Models that fail: phi4-mini (0.037), smollm2:1.7b (0.000), codestral:22b (0.100), qwen2.5-coder:14b (0.362), gemma3:4b (0.362), qwen2.5:3b (0.238), qwen2.5:7b (0.475).</p>
+        <p>llama3.3:70b at 0.975 / 100% pass rate is the standout finding. It is the only model that handles financial reasoning at the level a professional services founder would need: correct totals, correct variance identification, correct anomaly flagging.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Financial data analysis is not viable below 27b. gemma3:27b is the operational tier floor for this workload. phi4:14b is borderline. For anything involving revenue recognition, invoice aging, utilization tracking, or expense variance, run llama3.3:70b overnight if you want the numbers right. The failure mode at small sizes is producing numbers that are confidently wrong, which is more dangerous than producing numbers that are obviously off.</p></div>
+
+        <h3>Meeting Prep Briefings</h3>
+        <p class="descriptor">Given contact, company, meeting objective, and context, produce a structured briefing.</p>
+        <p><strong>Results:</strong> phi4:14b leads at 0.967 / 100%. qwen2.5:72b (0.933), llama3.3:70b (0.900), and codestral:22b (0.867) follow. The surprise: gemma3:27b scores 0.650 / 50%, below qwen2.5:7b (0.817) and codestral:22b (0.867). The model that produces perfect warm email fails on structured briefing synthesis. Task-model fit within a tier is real.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Meeting prep is where phi4:14b separates from the pack. phi4:14b reliably produces briefings that correctly capture a referral context, a relevant LinkedIn signal, and three sharp questions to ask. gemma3:27b does not, despite its strong performance on other categories. If briefing quality matters to your workflow, phi4:14b is the operational tier choice, not gemma3:27b.</p></div>
+
+        <h3>Contract and Agreement Review</h3>
+        <p class="descriptor">Given an NDA, SOW, engagement letter, or restrictive covenant section: identify key terms, obligations, non-standard clauses, and risk flags.</p>
+        <p><strong>Results:</strong> Contract review is the hardest workload in the dataset. The ceiling is llama3.3:70b at 0.713 / 75%. phi4:14b and qwen2.5:72b reach 0.675. Human review of contract review outputs confirmed the pattern: no complete failures, but consistent partial results on nuanced risk terms. The failure mode is incompleteness, not fabrication. Models identify the obvious terms and miss the subtle ones ($500M revenue catch-all in a non-compete, a two-business-day rejection window that's below standard).</p>
+        <p>smollm2:1.7b scores 0.037, essentially no contract review capability.</p>
+        <div class="finding"><span class="finding-label">Field Guide finding</span><p>Local models are useful for contract orientation: understanding what a document covers, what the obvious terms are, whether standard clauses are present. They are not a substitute for careful human review on risk terms. The right framing: run a 27b or 72b model to surface the first 80% of issues, then read the document yourself with the model's output as a checklist, not a verdict.</p></div>
+
+        <h2>The CPU-Only Tier</h2>
+        <p>We ran all six Tier 1 and the one Tier 2 boundary model (phi4:14b) with GPU disabled: pure CPU inference on the Ryzen 9 9950X3D. The question: <em>what can a founder do on a capable machine without a GPU?</em></p>
+        <p><strong>The latency differential is 10–20× across the board:</strong></p>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Workload class</th><th>GPU (qwen2.5:7b)</th><th>CPU (qwen2.5:7b)</th></tr></thead>
+                <tbody>
+                    <tr><td>Agentic dispatch</td><td>377ms</td><td>5,282ms</td></tr>
+                    <tr><td>Extraction</td><td>462ms</td><td>8,786ms</td></tr>
+                    <tr><td>Document drafting</td><td>3,044ms</td><td>51,199ms</td></tr>
+                    <tr><td>Financial data</td><td>3,082ms</td><td>53,639ms</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="scroll-hint">&#8596; scroll table</p>
+        <p><strong>Where CPU inference is viable:</strong></p>
+        <p>Short structured tasks (dispatch, extraction, Q&amp;A, graceful degradation) run at 2–9 seconds on small models (1.7b–7b). For a workflow that runs once per request with a few seconds of acceptable latency, this works. A founder using a 3b model on a CPU-only laptop to extract action items from meeting notes will wait 3–5 seconds per run. That's acceptable.</p>
+        <p><strong>Where CPU inference is not viable:</strong></p>
+        <p>Document drafting, financial data analysis, meeting prep, and contract review are all 15–120+ seconds on CPU, even for small models. phi4:14b on CPU takes 123 seconds for a document drafting prompt. That is not a usable interactive workflow. For long-form professional services work, a GPU is required for practical use.</p>
+        <p><strong>The CPU-only founder's answer:</strong> qwen2.5:3b or gemma3:4b on CPU handles extraction, Q&amp;A, summarization, and dispatch at acceptable latency. For anything involving long documents, financial reasoning, or multi-turn work, you need a GPU before local inference becomes worth the effort.</p>
+
+        <h2>The Cost Case</h2>
+        <p>From our 24-hour continuous benchmark run:</p>
+        <ul>
+            <li><strong>6,324 inference calls</strong> across 12 models and 8 task types</li>
+            <li><strong>Cloud equivalent cost</strong> (Sonnet-4 at production volume): $83.47</li>
+            <li><strong>Sovereign electricity cost</strong> (Kill-a-Watt measurement): $1.84</li>
+            <li><strong>Cost advantage: 11.3×</strong> at T3's production volume</li>
+            <li><strong>Crossover point: approximately 1.7 million tokens per day</strong></li>
+        </ul>
+        <p>Below 1.7M tokens/day, cloud API is cost-competitive when you factor in hardware amortization. Above it, sovereign inference pays for the hardware within months at current API rates.</p>
+        <p>Tower 3's production volume is well above the crossover. For a solo founder running light automation (a few hundred API calls per day), the economics don't favor a $6,000 workstation. For a founder-led firm running a pipeline of scoring, drafting, extraction, and routing tasks throughout the business day, the math shifts decisively.</p>
+        <p><em>Local inference is not cost-effective for everyone.</em> Know your token volume before you build.</p>
+
+        <h2>Where Sovereign Inference Ends</h2>
+        <p>Three workload findings are clear limits of what we observed, not gaps to be engineered around.</p>
+        <p><strong>Financial reasoning below 27b.</strong> The models below gemma3:27b produce confident financial outputs that are frequently wrong. This is a capability boundary. If you route financial data work to a small local model, you will get wrong numbers some of the time and not know it. The right architecture: financial data analysis routes to 27b+ on GPU or stays on cloud.</p>
+        <p><strong>Outreach register at every local tier.</strong> A separate A/B evaluation confirmed what this dataset shows: code-specialist models fail on outreach register and every local model tested falls below Sonnet-4 on the outreach quality rubric. Our outreach drafting workflow runs on Sonnet. The Field Guide warm email scores are better. Relational email is more accessible to local models than cold outreach. But for work that creates a first impression with a prospect, cloud remains the right call.</p>
+        <p><strong>Contract review at the nuanced risk level.</strong> Contract review has a 75% ceiling regardless of model size. llama3.3:70b is the ceiling and it scores 0.713. The models reliably catch obvious terms and miss subtle risk flags. For orientation and checklist generation, local models are useful. For risk assessment on a contract you're about to sign, read it yourself.</p>
+
+        <h2>How to Decide</h2>
+        <p>A founder-operator reading this guide is making one of three decisions: whether to adopt local inference at all, what to run if you do, and how to architect the cloud and local mix. The findings above answer each one. The through-line is worth stating directly.</p>
+        <p><strong>On whether to adopt at all.</strong> Local inference is operational today for a meaningful share of professional services work. Extraction, dispatch, summarization, Q&amp;A, structured drafting, and consistency under repetition all run reliably at the 7b–14b tier on consumer hardware. The work has shifted from "is this possible" to "is this worth the build cost for your specific token volume and workload mix."</p>
+        <p><strong>On what to run.</strong> The model selection question has a sharper answer than the marketplace suggests. Above the 7b threshold, model fit matters more than model size. Workload-specific best models outperform across-the-board best models: gemma3:27b on warm email and phi4:14b on briefing synthesis outperform the larger qwen2.5:72b. qwen2.5-coder:14b is excellent for code review and badly miscast for client email.</p>
+        <p><strong>On the architecture.</strong> A hybrid stack is the right answer for most founder-operated firms. Run local for the workloads where local is reliable and economical. Route financial reasoning, cold outreach, and high-stakes client-facing synthesis to cloud where the quality ceiling is higher. The cost case for sovereign inference requires sustained local volume above 1.7 million tokens per day. That threshold is achievable for any firm running AI continuously throughout the operational day.</p>
+        <p><strong>On the cases where there is no choice.</strong> Some workloads cannot go to a cloud API regardless of economics. PII, HIPAA-covered data, attorney-client privileged material, anything where data sovereignty is a contractual or regulatory requirement. For those workloads, the only operational question is how to run local well.</p>
+
+        <p>This is the operational reality Tower 3 was built around. The findings above are what we observe running the firm on our own stack. We publish them because founder-operated professional services firms face the same evaluation problem we faced, with less time to run twenty workload categories across twelve models. If this guide saves you weeks of testing, it has done its job.</p>
+
+        <h2>Model Quick Reference</h2>
+        <div class="table-scroll">
+            <table class="wide">
+                <thead><tr><th>Model</th><th>Tier</th><th>Best for</th><th>Avoid for</th><th>GPU latency<br>(dispatch, p50)</th></tr></thead>
+                <tbody>
+                    <tr><td>smollm2:1.7b</td><td>T1</td><td>Nothing production-critical</td><td>Any sustained context work</td><td>227ms</td></tr>
+                    <tr><td>qwen2.5:3b</td><td>T1</td><td>Extraction, dispatch, Q&amp;A</td><td>Financial reasoning, multi-turn</td><td>260ms</td></tr>
+                    <tr><td>gemma3:4b</td><td>T1</td><td><strong>Summarization, compression, email</strong> — best small model</td><td>Financial data, graceful degradation</td><td>443ms</td></tr>
+                    <tr><td>phi4-mini</td><td>T1</td><td>Structured dispatch</td><td>Everything else — does not scale within the phi4 family</td><td>266ms</td></tr>
+                    <tr><td>qwen2.5:7b</td><td>T1</td><td><strong>General purpose at the 7b tier</strong> — the practical floor</td><td>Financial data</td><td>377ms</td></tr>
+                    <tr><td>phi4:14b</td><td>T2</td><td><strong>Best all-rounder</strong> — briefings, Q&amp;A, documents</td><td>Financial data (borderline)</td><td>604ms</td></tr>
+                    <tr><td>gemma3:27b</td><td>T2</td><td><strong>Warm email, synthesis</strong> — perfect email register</td><td>Meeting prep (anomalous weakness)</td><td>1,383ms</td></tr>
+                    <tr><td>qwen2.5-coder:14b</td><td>T2</td><td>Code review, structured extraction</td><td>Outreach, financial data, email</td><td>732ms</td></tr>
+                    <tr><td>codestral:22b</td><td>T2</td><td>Dispatch, extraction</td><td>Financial data (catastrophic), general use</td><td>1,059ms</td></tr>
+                    <tr><td>deepseek-r1:32b</td><td>T3</td><td><strong>Multi-turn fidelity</strong> — best in class on multi-turn tasks</td><td>Interactive use (6–7s per turn)</td><td>6,637ms</td></tr>
+                    <tr><td>qwen2.5:72b</td><td>T3</td><td>Strong all-around overnight batch</td><td>Interactive use (38s+ on short tasks)</td><td>38,390ms</td></tr>
+                    <tr><td>llama3.3:70b</td><td>T3</td><td><strong>Financial data specialist</strong> (0.975) — meeting prep</td><td>Interactive use</td><td>23,402ms</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="scroll-hint">&#8596; scroll table</p>
+
+        <h2>Methodology Notes</h2>
+        <p>All runs on a single desktop workstation (RTX 5090 / Ryzen 9 9950X3D). Ollama inference engine. Temperature 0.7. Each prompt run once for the GPU tier and once with GPU disabled for the CPU-only tier. Sonnet-4 (claude-sonnet-4-20250514) is both the cloud baseline and the LLM judge for scoring. Human review covers the document drafting category for two representative models. Prompt files, harness code, and result data are available on request.</p>
+        <p>This is version 1.2. We will update this guide as models improve, as we run additional hardware configurations, and as the workload taxonomy grows with the firm's operational needs.</p>
+
+        <h2>Study Reference</h2>
+        <p>This Field Guide draws on a series of evaluations conducted between November 2025 and May 2026. The table below maps each study to its plain-language description for readers who want to trace specific findings.</p>
+        <div class="table-scroll">
+            <table class="wide">
+                <thead><tr><th>Study</th><th>Description</th><th>Key Output</th></tr></thead>
+                <tbody>
+                    <tr><td>Internal Routing Evaluation</td><td>7 task types evaluated across 8 model families on Colossus; established the initial routing table for T3 operational nodes</td><td>VRAM fit matrix, latency baselines, model-to-task assignments</td></tr>
+                    <tr><td>Coding Capability Deep Dive</td><td>Evaluated local models for code review against T3 security standards; compared against Gemini cloud baseline</td><td>qwen2.5-coder:14b promoted to production for code review at 0.82s p50</td></tr>
+                    <tr><td>72b Quantization Study</td><td>Tested Q3 quantization on 72b models; measured whether CPU offload could be eliminated</td><td>Q3 improves latency 1.55× but does not eliminate CPU offload; routed to overnight batch only</td></tr>
+                    <tr><td>Talus PM Synthesis Evaluation</td><td>Tested local models on client-facing synthesis tasks requiring professional register</td><td>No local candidate cleared the quality threshold; Sonnet permanent for this workload</td></tr>
+                    <tr><td>Outreach Register A/B</td><td>Tested operational and small-tier models against cold outreach quality rubric with Sonnet-only judging</td><td>No local model cleared the threshold; code-specialist models performed worst; Sonnet permanent for outreach</td></tr>
+                    <tr><td>24-Hour Sovereignty Economics Run</td><td>Ran the full internal task matrix continuously for 24 hours; measured power draw with Kill-a-Watt</td><td>11.3× cost advantage vs cloud at production volume; $1.84 electricity vs $83.47 cloud equivalent</td></tr>
+                    <tr><td>Field Guide Evaluation (this document)</td><td>12 models across 20 professional services workload categories; GPU and CPU-only tiers</td><td>This document</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="scroll-hint">&#8596; scroll table</p>
+
+    </div>
+
+    <div class="guide-footer">
+        <span class="firm">Tower 3 Strategic AI</span> — Portland, Maine<br>
+        <a href="https://tower3strategicai.com">tower3strategicai.com</a> &nbsp;&middot;&nbsp; <a href="index.html">Home</a>
+    </div>
+
+</div>
+
+</body>
+</html>

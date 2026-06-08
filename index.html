@@ -95,6 +95,32 @@
             border-bottom-color: var(--blueprint-blue);
         }
 
+        .resources {
+            font-family: 'Roboto Mono', monospace;
+            margin-top: 28px;
+            font-size: 0.8rem;
+        }
+
+        .resources .label {
+            display: block;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.62rem;
+            margin-bottom: 6px;
+        }
+
+        .resources a {
+            color: var(--blueprint-blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .resources a:hover {
+            border-bottom-color: var(--blueprint-blue);
+        }
+
         .ver-tag {
             position: absolute;
             top: 20px;
@@ -146,6 +172,11 @@
         <strong>Tom Spitz</strong><br>
         Founder & Strategic AI Architect<br>
         <span id="contact-email"></span>
+    </div>
+
+    <div class="resources">
+        <span class="label">Resources</span>
+        <a href="field-guide.html">Local Inference Field Guide &rarr;</a>
     </div>
 </div>
 
